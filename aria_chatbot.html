@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat with Aria</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e6f0ff;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h2 {
+      color: #1a73e8;
+      margin-bottom: 20px;
+    }
+    #chat {
+      width: 100%;
+      max-width: 600px;
+      max-height: 500px;
+      overflow-y: auto;
+      border: 2px solid #1a73e8;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .message {
+      margin: 10px 0;
+    }
+    .user {
+      font-weight: bold;
+      color: #0b5394;
+    }
+    input[type="text"] {
+      width: 70%;
+      padding: 10px;
+      border: 1px solid #1a73e8;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    button:hover {
+      background-color: #155ab6;
+    }
+  </style>
+</head>
+<body>
+  <h2>Chat with Aria 💬</h2>
+  <div id="chat"></div>
+  <div>
+    <input type="text" id="userInput" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    const apiKey = "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"; // Replace with your real API key
+
+    async function sendMessage() {
+      const inputElement = document.getElementById('userInput');
+      const userMessage = inputElement.value.trim();
+      if (!userMessage) return;
+
+      const chatDiv = document.getElementById('chat');
+      chatDiv.innerHTML += `<div class="message user">🧑 You: ${userMessage}</div>`;
+      inputElement.value = '';
+      inputElement.disabled = true;
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: "gpt-3.5-turbo",
+            messages: [{ role: "user", content: userMessage }]
+          })
+        });
+
+        const data = await response.json();
+        console.log("API Response:", data);
+
+        if (data.error) {
+          chatDiv.innerHTML += `<div class="message">❌ Error: ${data.error.message}</div>`;
+        } else {
+          const aiReply = data.choices[0].message.content;
+          chatDiv.innerHTML += `<div class="message">🤖 Aria: ${aiReply}</div>`;
+        }
+      } catch (error) {
+        console.error("Request failed:", error);
+        chatDiv.innerHTML += `<div class="message">❌ Failed to send message. Check console.</div>`;
+      }
+
+      chatDiv.scrollTop = chatDiv.scrollHeight;
+      inputElement.disabled = false;
+    }
+  </script>
+</body>
+</html>
